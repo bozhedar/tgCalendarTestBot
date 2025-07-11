@@ -1,13 +1,9 @@
 package tg.bot.service.yandex;
 
-import lombok.Getter;
-import lombok.SneakyThrows;
 import net.fortuna.ical4j.data.CalendarBuilder;
 import net.fortuna.ical4j.data.ParserException;
 import net.fortuna.ical4j.model.Calendar;
-import net.fortuna.ical4j.model.DateTime;
 import net.fortuna.ical4j.model.Property;
-import net.fortuna.ical4j.model.component.CalendarComponent;
 import net.fortuna.ical4j.model.component.VEvent;
 import net.fortuna.ical4j.model.property.DateProperty;
 import net.fortuna.ical4j.model.property.DtEnd;
@@ -15,30 +11,22 @@ import net.fortuna.ical4j.model.property.DtStart;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
-import java.nio.charset.StandardCharsets;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Scanner;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
@@ -49,9 +37,9 @@ public class YandexService {
     @Value("${calendar.url}")
     private String calendarUrl;
     private static final ZoneId TIME_ZONE = ZoneId.of("Asia/Yekaterinburg");
-    private static final int WORK_DAY_START_HOUR = 8;
-    private static final int WORK_DAY_END_HOUR = 22;
-    private static final int DEFAULT_DAYS_AHEAD = 30;
+    private static final int WORK_DAY_START_HOUR = 9;
+    private static final int WORK_DAY_END_HOUR = 23;
+    private static final int DEFAULT_DAYS_AHEAD = 7;
     private static final int SLOT_DURATION_HOURS = 1;
 
 
@@ -151,7 +139,7 @@ public class YandexService {
             Calendar calendar = builder.build(in);
 
             ZonedDateTime now = ZonedDateTime.now(TIME_ZONE);
-            ZonedDateTime endDate = now.plusDays(DEFAULT_DAYS_AHEAD);
+            ZonedDateTime endDate = now.plusDays(DEFAULT_DAYS_AHEAD - 1);
 
             for (Object component : calendar.getComponents()) {
                 if (component instanceof VEvent) {
@@ -197,10 +185,7 @@ public class YandexService {
 
     private ZonedDateTime convertToZonedDateTime(DateProperty dateProperty) {
         try {
-            // Для версий ical4j 3.x
 
-
-            // Альтернативный способ через строковое представление
             String dateStr = dateProperty.getValue();
             if (dateStr != null) {
                 return parseIcalDateTimeString(dateStr);
@@ -229,7 +214,7 @@ public class YandexService {
     private List<TimeSlot> generateAllPossibleSlots() {
         List<TimeSlot> slots = new ArrayList<>();
         ZonedDateTime now = ZonedDateTime.now(TIME_ZONE);
-        ZonedDateTime endDate = now.plusDays(DEFAULT_DAYS_AHEAD);
+        ZonedDateTime endDate = now.plusDays(DEFAULT_DAYS_AHEAD - 1);
 
         ZonedDateTime currentDay = now.toLocalDate().atStartOfDay(TIME_ZONE);
 
