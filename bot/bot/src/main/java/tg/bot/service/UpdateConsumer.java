@@ -14,6 +14,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMa
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
+import tg.bot.service.yandex.YandexService;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -22,13 +23,17 @@ import java.util.List;
 @Slf4j
 @Component
 public class UpdateConsumer implements LongPollingSingleThreadUpdateConsumer {
+
     private final TelegramClient telegramClient;
+    private final YandexService yandexService;
     @Value("${contact.owner}")
     private String ownerUrl;
 
-    public UpdateConsumer(@Value("${bot.token}") String token) {
+    public UpdateConsumer(@Value("${bot.token}") String token, YandexService yandexService) {
+
         this.telegramClient = new OkHttpTelegramClient(token);
 
+        this.yandexService = yandexService;
     }
 
     @Override
@@ -72,9 +77,8 @@ public class UpdateConsumer implements LongPollingSingleThreadUpdateConsumer {
 
         SendMessage message = SendMessage.builder()
                 .chatId(chatId)
-                .text("Свободные записи на данный момент (" +
-                        dateTime +
-                        ")\n\n/*СВОБОДНЫЕ ЗАПИСИ*/"
+                .text(yandexService.printSlots()
+
                 )
                 .build();
 
